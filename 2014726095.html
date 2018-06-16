@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kwangwoo calculator using JQuery and math.js</title>
+    <style type="text/css">
+        table {
+            width: 300px;
+            height: 534px;
+            border: 0px;
+            background-color: rgb(3, 3, 65)
+        }
+
+        .bas {
+            width: 45px;
+            height: 35px;
+            margin: 5px;
+            font-size: 15pt;
+            color: white;
+            background-color: lightgray;
+            border-radius: 10px
+        }
+
+        .func1 {
+            width: 45px;
+            height: 35px;
+            margin: 5px;
+            font-size: 15pt;
+            color: white;
+            background-color: lightgreen;
+            border-radius: 10px
+        }
+
+        .func2 {
+            width: 45px;
+            height: 35px;
+            margin: 5px;
+            font-size: 15pt;
+            color: white;
+            background-color: skyblue;
+            border-radius: 10px
+        }
+
+        .sec {
+            width: 45px;
+            height: 35px;
+            margin: 5px;
+            font: italic;
+            font-size: 11pt;
+            color: white;
+            background-color: rgb(241, 197, 115);
+            border-radius: 10px
+        }
+
+        .cle {
+            width: 45px;
+            height: 35px;
+            font-size: 14pt;
+            color: white;
+            background-color: orangered;
+            border-radius: 10px;
+        }
+
+        #latex {
+            width: 284px;
+            height: 100px;
+            margin-bottom: -5px;
+            border: 1px solid gray;
+            font-size: 15pt;
+            text-align: right;
+            background-color: white;
+            overflow: scroll;
+            white-space: nowrap;
+            word-wrap: break-word;
+        }
+
+        #calc {
+            width: 284px;
+            height: 40px;
+            margin-top: -10px;
+            border: 1px solid gray;
+            font-size: 15pt;
+            text-align: right;
+            background-color: white;
+            overflow-y: scroll;
+        }
+
+        .next {
+            width: 109.2px;
+            height: 40px;
+            font-size: 15pt;
+            color: white;
+            background-color: purple;
+            border-radius: 10px
+        }
+
+        .func_key,
+        .graph_key {
+            width: 110px;
+            height: 40px;
+            font-size: 15pt;
+            color: white;
+            background-color: royalblue;
+            border-radius: 10px
+        }
+
+        .intro,
+        .deg {
+            width: 45px;
+            height: 35px;
+            font: italic;
+            font-size: 14pt;
+            color: white;
+            background-color: hotpink;
+            border-radius: 10px
+        }
+    </style>
+
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js' type='text/javascript'></script>
+
+    <script src='math.js' type='text/javascript'></script>
+    <script src='expr_eval.js' type='text/javascript'></script>
+
+    <script type="text/javascript">
+        var In;
+        var parser = math.parser();
+        var myGraph;
+        var Click_Graph = 0;
+        var Graph_equation = "0";
+        var previous="0";
+
+        function syn_err() {
+            var k = document.calculform;
+            k.calc.value = "Syntax Error";
+            k.latex.value = "Syntax Error";
+        }
+
+        function backspace() {
+            var k = document.calculform;
+            //alert(k.calc.value);
+            k.calc.value = previous;
+            k.latex.value = previous;
+            Graph_equation = previous;
+        }
+
+        function cl() {
+            var k = document.calculform;
+
+            k.calc.value = "0";
+            k.latex.value = "";
+            Graph_equation = "0";
+        }
+
+        function key(In) {
+            var k = document.calculform;
+            previous=k.calc.value;
+
+            if (k.calc.value == 0 || k.calc.value == "function enrolled") {
+                k.calc.value = "";
+                Graph_equation = "";
+            }
+            if (k.latex.value != "") {
+                k.latex.value = k.calc.value;
+            }
+
+            k.calc.value += In;
+            k.latex.value += In;
+            Graph_equation += In;
+            if (In == "=") {
+                Graph_equation = "";
+            }
+        }
+
+        function result() {
+            var k = document.calculform;
+            try {
+                k.latex.value += "";
+                k.calc.value = parser.eval(k.calc.value);
+                Graph_equation = k.calc.value;
+            }
+            catch (e) {
+                syn_err();
+                return;
+            }
+        }
+        function intro() {
+            cl();
+            var k = document.calculform;
+            k.calc.value = "2014726095";
+            k.latex.value = "Kwangwoo's Calculator";
+        }
+        function origin_cal() {
+            $('.origin').show();
+            $('.extend').hide();
+            $('.graph').hide();
+        }
+        function extend_cal() {
+            $('.origin').hide();
+            $('.extend').show();
+            $('.graph').hide();
+        }
+        function btn_graph() {
+            var k = document.calculform;
+
+            $('.origin').hide();
+            $('.extend').hide();
+            $('.graph').show();
+            //alert(Graph_equation);
+
+            var vktj = new Parser();
+            var expr = vktj.parse(Graph_equation);
+            var i = Click_Graph % 3;
+            if (i == 0) {
+                myGraph.drawEquation(function (x) {
+                    return expr.evaluate({ x: x });
+                }, "blue", 1);
+            }
+            else if (i == 1) {
+                myGraph.drawEquation(function (x) {
+                    return expr.evaluate({ x: x });
+                }, "green", 1);
+            }
+            else if (i == 2) {
+                myGraph.drawEquation(function (x) {
+                    return expr.evaluate({ x: x });
+                }, "red", 1);
+            }
+            Click_Graph++;
+
+        }
+
+        function btn_function() {
+            var k = document.calculform;
+            try {
+                k.calc.value = parser.eval(k.calc.value);
+                var tokens = k.calc.value.split(' ');
+                if (tokens[0] == 'function') {
+                    k.calc.value = tokens[0];
+                    k.calc.value += " enrolled";
+                }
+            }
+            catch (e) {
+                syn_err();
+                return;
+            }
+        }
+
+        //그래프
+
+        function Graph(con) {
+            // user defined properties
+            this.canvas = document.getElementById(con.canvasId);
+            this.minX = con.minX;
+            this.minY = con.minY;
+            this.maxX = con.maxX;
+            this.maxY = con.maxY;
+            this.unitsPerTick = con.unitsPerTick;
+            // constants
+            this.axisColor = "#aaa";
+            this.font = "8pt Calibri";
+            this.tickSize = 20;
+            // relationships
+            this.context = this.canvas.getContext("2d");
+            this.rangeX = this.maxX - this.minX;
+            this.rangeY = this.maxY - this.minY;
+            this.unitX = this.canvas.width / this.rangeX;
+            this.unitY = this.canvas.height / this.rangeY;
+            this.centerY = Math.round(Math.abs(this.minY / this.rangeY) * this.canvas.height);
+            this.centerX = Math.round(Math.abs(this.minX / this.rangeX) * this.canvas.width);
+            this.iteration = (this.maxX - this.minX) / 1000;
+            this.scaleX = this.canvas.width / this.rangeX;
+            this.scaleY = this.canvas.height / this.rangeY;
+
+            // draw x and y axis
+            this.drawXAxis();
+            this.drawYAxis();
+        }
+
+        Graph.prototype.drawXAxis = function () {
+            var context = this.context;
+            context.save();
+            context.beginPath();
+            context.moveTo(0, this.centerY);
+            context.lineTo(this.canvas.width, this.centerY);
+            context.strokeStyle = this.axisColor;
+            context.lineWidth = 2;
+            context.stroke();
+            context.fillText(0, this.centerX, this.centerY);
+
+            // draw tick marks
+            var xPosIncrement = this.unitsPerTick * this.unitX;
+            var xPos, unit;
+            context.font = this.font;
+            context.textAlign = "center";
+            context.textBaseline = "top";
+
+            // draw left tick marks
+            xPos = this.centerX - xPosIncrement;
+            unit = -1 * this.unitsPerTick;
+            while (xPos > 0) {
+                context.moveTo(xPos, this.centerY - this.tickSize / 2);
+                context.lineTo(xPos, this.centerY + this.tickSize / 2);
+                context.stroke();
+                context.fillText(unit, xPos, this.centerY + this.tickSize / 2 + 3);
+                unit -= this.unitsPerTick;
+                xPos = Math.round(xPos - xPosIncrement);
+            }
+
+            // draw right tick marks
+            xPos = this.centerX + xPosIncrement;
+            unit = this.unitsPerTick;
+            while (xPos < this.canvas.width) {
+                context.moveTo(xPos, this.centerY - this.tickSize / 2);
+                context.lineTo(xPos, this.centerY + this.tickSize / 2);
+                context.stroke();
+                context.fillText(unit, xPos, this.centerY + this.tickSize / 2 + 3);
+                unit += this.unitsPerTick;
+                xPos = Math.round(xPos + xPosIncrement);
+            }
+            context.restore();
+        };
+
+        Graph.prototype.drawYAxis = function () {
+            var context = this.context;
+            context.save();
+            context.beginPath();
+            context.moveTo(this.centerX, 0);
+            context.lineTo(this.centerX, this.canvas.height);
+            context.strokeStyle = this.axisColor;
+            context.lineWidth = 2;
+            context.stroke();
+
+            // draw tick marks 
+            var yPosIncrement = this.unitsPerTick * this.unitY;
+            var yPos, unit;
+            context.font = this.font;
+            context.textAlign = "right";
+            context.textBaseline = "middle";
+
+            // draw top tick marks
+            yPos = this.centerY - yPosIncrement;
+            unit = this.unitsPerTick;
+            while (yPos > 0) {
+                context.moveTo(this.centerX - this.tickSize / 2, yPos);
+                context.lineTo(this.centerX + this.tickSize / 2, yPos);
+                context.stroke();
+                context.fillText(unit, this.centerX - this.tickSize / 2 - 3, yPos);
+                unit += this.unitsPerTick;
+                yPos = Math.round(yPos - yPosIncrement);
+            }
+
+            // draw bottom tick marks
+            yPos = this.centerY + yPosIncrement;
+            unit = -1 * this.unitsPerTick;
+            while (yPos < this.canvas.height) {
+                context.moveTo(this.centerX - this.tickSize / 2, yPos);
+                context.lineTo(this.centerX + this.tickSize / 2, yPos);
+                context.stroke();
+                context.fillText(unit, this.centerX - this.tickSize / 2 - 3, yPos);
+                unit -= this.unitsPerTick;
+                yPos = Math.round(yPos + yPosIncrement);
+            }
+            context.restore();
+        };
+
+        Graph.prototype.drawEquation = function (equation, color, thickness) {
+            var context = this.context;
+            context.save();
+            this.transformContext();
+            context.beginPath();
+            context.moveTo(this.minX, equation(this.minX));
+
+            for (var x = this.minX + this.iteration; x <= this.maxX; x += this.iteration) {
+                context.lineTo(x, equation(x));
+            }
+            context.restore();
+            context.lineJoin = "round";
+            context.lineWidth = thickness;
+            context.strokeStyle = color;
+            context.stroke();
+            context.restore();
+        };
+
+        Graph.prototype.transformContext = function () {
+            var context = this.context;
+            // move context to center of canvas
+            this.context.translate(this.centerX, this.centerY);
+            context.scale(this.scaleX, -this.scaleY);
+        };
+
+        window.onload = function () {
+            myGraph = new Graph({
+                canvasId: "myCanvas",
+                minX: -10,
+                minY: -10,
+                maxX: 10,
+                maxY: 10,
+                unitsPerTick: 1
+            });
+        }
+
+    </script>
+</head>
+
+<body>
+    <form name="calculform">
+
+        <table align="center" cellspacing="0" style="border-radius: 10px">
+            <!--calculator-->
+            <tbody>
+                <tr>
+                    <td align="center" colspan="5">
+                        <input type="text" name="latex" id="latex" value="">
+                    </td>
+
+                </tr>
+                <tr>
+                    <td align="center" colspan="5">
+                        <input type="text" name="calc" id="calc" value="0">
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td colspan="2">
+                        <input type="button" value="<<" class="next" onclick="origin_cal()">
+                    </td>
+                    <td colspan="1">
+                        <input type="button" value="" class="intro" onclick="intro()">
+                    </td>
+                    <td colspan="2">
+                        <input type="button" value=">>" class="next" onclick="extend_cal()">
+                    </td>
+                </tr>
+
+                <tr class="origin" align="center">
+                    <td>
+                        <input type="button" value="7" class="bas" onclick="key(7)">
+                    </td>
+                    <td>
+                        <input type="button" value="8" class="bas" onclick="key(8)">
+                    </td>
+                    <td>
+                        <input type="button" value="9" class="bas" onclick="key(9)">
+                    </td>
+                    <td>
+                        <input type="button" value="CL" class="cle" onclick="cl()">
+                    </td>
+                    <td>
+                        <input type="button" value="EV" class="cle" onclick="result()">
+                    </td>
+                </tr>
+                <tr class="origin" align="center">
+                    <td>
+                        <input type="button" value="4" class="bas" onclick="key(4)">
+                    </td>
+                    <td>
+                        <input type="button" value="5" class="bas" onclick="key(5)">
+                    </td>
+                    <td>
+                        <input type="button" value="6" class="bas" onclick="key(6)">
+                    </td>
+                    <td>
+                        <input type="button" value="×" class="func1" onclick="key('*')">
+                    </td>
+                    <td>
+                        <input type="button" value="÷" class="func1" onclick="key('/')">
+                    </td>
+                </tr>
+                <tr class="origin" align="center">
+                    <td>
+                        <input type="button" value="1" class="bas" onclick="key(1)">
+                    </td>
+                    <td>
+                        <input type="button" value="2" class="bas" onclick="key(2)">
+                    </td>
+                    <td>
+                        <input type="button" value="3" class="bas" onclick="key(3)">
+                    </td>
+                    <td>
+                        <input type="button" value="+" class="func1" onclick="key('+')">
+                    </td>
+                    <td>
+                        <input type="button" value="-" class="func1" onclick="key('-')">
+                    </td>
+                </tr>
+                <tr class="origin" align="center">
+                    <td>
+                        <input type="button" value="0" class="bas" onclick="key(0)">
+                    </td>
+                    <td>
+                        <input type="button" value="." class="bas" onclick="key('.')">
+                    </td>
+                    <td>
+                        <input type="button" value="(" class="func2" onclick="key('(')">
+                    </td>
+                    <td>
+                        <input type="button" value=")" class="func2" onclick="key(')')">
+                    </td>
+                    <td>
+                        <input type="button" value="=" class="func1" onclick="key('=')">
+                    </td>
+                </tr>
+                <tr class="origin" align="center">
+                    <td>
+                        <input type="button" value="f" class="sec" onclick="key('f')">
+                    </td>
+                    <td>
+                        <input type="button" value="x" class="sec" onclick="key('x')">
+                    </td>
+                    <td>
+                        <input type="button" value="sin" class="deg" onclick="key('sin')">
+                    </td>
+                    <td>
+                        <input type="button" value="cos" class="deg" onclick="key('cos')">
+                    </td>
+                    <td>
+                        <input type="button" value="tan" class="deg" onclick="key('tan')">
+                    </td>
+                </tr>
+                <tr class="extend" style="display: none" align="center">
+                    <td>
+                        <input type="button" value="%" class="func1" onclick="key('%')">
+                    </td>
+                    <td>
+                        <input type="button" value="^" class="func1" onclick="key('^')">
+                    </td>
+                    <td>
+                        <input type="button" value="e" class="deg" onclick="key('e')">
+                    </td>
+                    <td>
+                        <input type="button" value="pi" class="deg" onclick="key('pi')">
+                    </td>
+                    <td>
+                        <input type="button" value="i" class="deg" onclick="key('i')">
+                    </td>
+                </tr>
+                <tr class="extend" style="display: none" align="center">
+                    <td>
+                        <input type="button" value="==" class="func1" onclick="key('==')">
+                    </td>
+                    <td>
+                        <input type="button" value="!=" class="func1" onclick="key('!=')">
+                    </td>
+                    <td>
+                        <input type="button" value="[" class="func2" onclick="key('[')">
+                    </td>
+                    <td>
+                        <input type="button" value="]" class="func2" onclick="key(']')">
+                    </td>
+
+                    <td>
+                        <input type="button" value="hyp" class="deg" onclick="key('hyp')">
+                    </td>
+                </tr>
+                <tr class="extend" style="display: none" align="center">
+                    <td>
+                        <input type="button" value="<" class="func1" onclick="key('<')">
+                    </td>
+                    <td>
+                        <input type="button" value=">" class="func1" onclick="key('>')">
+                    </td>
+                    <td>
+                        <input type="button" value=":" class="func2" onclick="key(':')">
+                    </td>
+                    <td>
+                        <input type="button" value="," class="func2" onclick="key(',')">
+                    </td>
+                    <td>
+                        <input type="button" value="deg" class="deg" onclick="key('deg')">
+                    </td>
+                </tr>
+                <tr class="extend" style="display: none" align="center">
+                    <td>
+                        <input type="button" value="<=" class="func1" onclick="key('<=')">
+                    </td>
+                    <td>
+                        <input type="button" value=">=" class="func1" onclick="key('>=')">
+                    </td>
+                    <td>
+                        <input type="button" value="y" class="sec" onclick="key('y')">
+                    </td>
+                    <td>
+                        <input type="button" value="z" class="sec" onclick="key('z')">
+                    </td>
+                    <td>
+                        <input type="button" value="g" class="sec" onclick="key('g')">
+                    </td>
+                </tr>
+                <tr class="extend" style="display: none" align="center">
+                    <td>
+                        <input type="button" value="log" class="func1" onclick="key('log')">
+                    </td>
+                    <td>
+                        <input type="button" value="sqrt" class="func1" onclick="key('sqrt')">
+                    </td>
+                    <td>
+                        <input type="button" value="exp" class="sec" onclick="key('exp')">
+                    </td>
+                    <td>
+                        <input type="button" value="cross" class="sec" onclick="key('cross')">
+                    </td>
+                    <td>
+                        <input type="button" value="det" class="sec" onclick="key('det')">
+                    </td>
+                </tr>
+
+                <tr class="graph" align="center" style="display: none;">
+                    <td colspan="5" align="center">
+                        <canvas style="background-color: lightgrey" id="myCanvas" width="285" height="205" margin="0"></canvas>
+                    </td>
+                </tr>
+                <tr class="graph" align="center" style="display: none">
+                    <td>
+                        <input type="button" value="f" class="sec" onclick="key('f')">
+                    </td>
+                    <td>
+                        <input type="button" value="x" class="sec" onclick="key('x')">
+                    </td>
+                    <td>
+                        <input type="button" value="(" class="func2" onclick="key('(')">
+                    </td>
+                    <td>
+                        <input type="button" value=")" class="func2" onclick="key(')')">
+                    </td>
+                    <td>
+                        <input type="button" value="=" class="func1" onclick="key('=')">
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td colspan="1">
+                        <input type="button" value="Del" class="cle" onclick="backspace()">
+                    </td>
+                    <td colspan="2">
+                        <input type="button" value="function" class="func_key" onclick="btn_function()">
+                    </td>
+                    <td colspan="2">
+                        <input type="button" value="graph" class="graph_key" onclick="btn_graph()">
+                    </td>
+                </tr>
+        </table>
+    </form>
+</body>
+
+</html>
